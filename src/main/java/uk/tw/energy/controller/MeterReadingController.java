@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.tw.energy.domain.ElectricityReading;
 import uk.tw.energy.domain.MeterReadings;
@@ -18,35 +19,45 @@ import uk.tw.energy.service.MeterReadingService;
 @RequestMapping("/readings")
 public class MeterReadingController {
 
-    private final MeterReadingService meterReadingService;
+  private final MeterReadingService meterReadingService;
 
-    public MeterReadingController(MeterReadingService meterReadingService) {
-        this.meterReadingService = meterReadingService;
+  public MeterReadingController(MeterReadingService meterReadingService) {
+    this.meterReadingService = meterReadingService;
+  }
+
+  @PostMapping
+  public ResponseEntity<Void> storeReadings(@RequestBody MeterReadings meterReadings) {
+
+    if (!isMeterReadingsValid(meterReadings)) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    @PostMapping("/store")
-    public ResponseEntity storeReadings(@RequestBody MeterReadings meterReadings) {
-        if (!isMeterReadingsValid(meterReadings)) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        meterReadingService.storeReadings(meterReadings.smartMeterId(), meterReadings.electricityReadings());
-        return ResponseEntity.ok().build();
-    }
+    meterReadingService.storeReadings(
+        meterReadings.smartMeterId(), meterReadings.electricityReadings());
 
-    private boolean isMeterReadingsValid(MeterReadings meterReadings) {
-        String smartMeterId = meterReadings.smartMeterId();
-        List<ElectricityReading> electricityReadings = meterReadings.electricityReadings();
-        return smartMeterId != null
-                && !smartMeterId.isEmpty()
-                && electricityReadings != null
-                && !electricityReadings.isEmpty();
-    }
+    return ResponseEntity.ok().build();
+  }
 
-    @GetMapping("/read/{smartMeterId}")
-    public ResponseEntity readReadings(@PathVariable String smartMeterId) {
-        Optional<List<ElectricityReading>> readings = meterReadingService.getReadings(smartMeterId);
-        return readings.isPresent()
-                ? ResponseEntity.ok(readings.get())
-                : ResponseEntity.notFound().build();
-    }
+  private boolean isMeterReadingsValid(MeterReadings meterReadings) {
+
+    String smartMeterId = meterReadings.smartMeterId();
+    List<ElectricityReading> electricityReadings = meterReadings.electricityReadings();
+
+    return smartMeterId != null
+        && !smartMeterId.isEmpty()
+        && electricityReadings != null
+        && !electricityReadings.isEmpty();
+  }
+
+  @GetMapping("/{smartMeterId}")
+  public ResponseEntity<List<ElectricityReading>> readReadings(
+      @PathVariable String smartMeterId,
+      @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
+      @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
+
+    Optional<List<ElectricityReading>> readings =
+        meterReadingService.getReadings(smartMeterId, offset, limit);
+
+    return readings.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+  }
 }

@@ -1,8 +1,8 @@
-#/usr/bin/env bash
+#!/usr/bin/env bash
 #
 # Execute basic checks on the application
 #
-# If the test breaks unexpectedly, you will find the the server log 
+# If the test breaks unexpectedly, you will find the the server log
 # and the temp files used in the assertion in the directory "$tmp_dir"
 #
 
@@ -11,6 +11,8 @@ run_command="SERVER_PORT=57134 java -jar build/libs/developer-joyofenergy-java.j
 base_url="http://localhost:57134"
 tmp_dir="/tmp/joe"
 
+SECONDS=0
+
 # No customization needed beyond this point
 
 # ----------------------------
@@ -18,7 +20,7 @@ tmp_dir="/tmp/joe"
 # ----------------------------
 
 fail() {
-  echo $*
+  echo "$*"
   exit 1
 }
 
@@ -31,12 +33,18 @@ assert_json() {
     exit $?
   }
   diff "$tmp_dir/expected.json" "$tmp_dir/actual.json" || {
-    fail "Differences found in $command"    
+    echo Expected;
+    cat "$tmp_dir/expected.json";
+
+    echo Actual;
+    cat "$tmp_dir/actual.json";
+
+    fail "Differences found in $command"
   }
 }
 
 server_is_up() {
-  curl --fail --silent $base_url/readings/read/smart-meter-0 > /dev/null
+  curl --fail --silent $base_url/readings/smart-meter-0 > /dev/null
 }
 
 # Common options we use with curl
@@ -74,7 +82,7 @@ sh -c "$run_command" > "$tmp_dir/server.log" &
 run_pid=$!
 
 # kill the server when the script exits
-trap "kill $run_pid" exit
+trap 'kill $run_pid' exit
 
 # wait for the server to be up
 max_wait=10
@@ -120,7 +128,7 @@ payload='
 }
 '
 
-$curl -d "$payload" -H "Content-Type: application/json" $base_url/readings/store || {
+$curl -d "$payload" -H "Content-Type: application/json" $base_url/readings || {
   fail "could not store readings"
 }
 
@@ -149,7 +157,7 @@ expected='
     "reading": 0.4
   }
 ]'
-assert_json "$expected" "$curl $base_url/readings/read/$TEST_METER"
+assert_json "$expected" "$curl $base_url/readings/$TEST_METER"
 echo "OK reading data"
 
 # ----------------------------
@@ -166,7 +174,7 @@ expected='
   "pricePlanId": null
 }'
 
-assert_json "$expected" "$curl $base_url/price-plans/compare-all/$TEST_METER"
+assert_json "$expected" "$curl $base_url/price-plans/comparisons?smart-meter-id=$TEST_METER"
 echo "OK comparing all price plans"
 
 # ----------------------------
@@ -179,10 +187,13 @@ expected='[
   },
   {
     "price-plan-1": 12.0
+  },
+  {
+    "price-plan-0": 60.0
   }
 ]'
 
-assert_json "$expected" "$curl $base_url/price-plans/recommend/$TEST_METER?limit=2"
+assert_json "$expected" "$curl $base_url/price-plans/recommendations?smart-meter-id=$TEST_METER&limit=3"
 echo "OK recommended price plan"
 
 # ----------------------------
@@ -190,4 +201,5 @@ echo "OK recommended price plan"
 # ----------------------------
 
 rm -rf "$tmp_dir"
-echo "OK all good!"
+duration=$SECONDS
+echo "Finished successfully in $((duration % 60)) seconds."

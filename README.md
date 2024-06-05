@@ -133,18 +133,18 @@ to [run the application](#run-the-application) section above.
 Endpoint
 
 ```text
-POST /readings/store
+POST /readings
 ```
 
 Example of body
 
 ```json
 {
-  "smartMeterId": <smartMeterId>,
+  "smartMeterId": "<smartMeterId>",
   "electricityReadings": [
     {
-      "time": <time>,
-      "reading": <reading>
+      "time": "<time>",
+      "reading": "<reading>"
     }
   ]
 }
@@ -181,7 +181,7 @@ The following POST request, is an example request using CURL, sends the readings
 $ curl \
   -X POST \
   -H "Content-Type: application/json" \
-  "http://localhost:8080/readings/store" \
+  "http://localhost:8080/readings" \
   -d '{"smartMeterId":"smart-meter-0","electricityReadings":[{"time":1606636800,"reading":0.0503},{"time":1606636860,"reading":0.0621},{"time":1606636920,"reading":0.0222},{"time":1606636980,"reading":0.0423},{"time":1606637040,"reading":0.0191}]}'
 ```
 
@@ -192,7 +192,7 @@ The above command does not return anything.
 Endpoint
 
 ```text
-GET /readings/read/<smartMeterId>
+GET /readings/<smartMeterId>
 ```
 
 Parameters
@@ -204,7 +204,7 @@ Parameters
 Retrieving readings using CURL
 
 ```console
-$ curl "http://localhost:8080/readings/read/smart-meter-0"
+$ curl "http://localhost:8080/readings/smart-meter-0"
 ```
 
 Example output
@@ -251,7 +251,7 @@ Parameters
 Retrieving readings using CURL
 
 ```console
-$ curl "http://localhost:8080/price-plans/compare-all/smart-meter-0"
+$ curl "http://localhost:8080/price-plans/comparisons?smart-meter-id=smart-meter-0"
 ```
 
 Example output
@@ -285,7 +285,7 @@ Parameters
 Retrieving readings using CURL
 
 ```console
-$ curl "http://localhost:8080/price-plans/recommend/smart-meter-0?limit=2"
+$ curl "http://localhost:8080/price-plans/recommendations?smart-meter-id=smart-meter-0&limit=2"
 ```
 
 Example output

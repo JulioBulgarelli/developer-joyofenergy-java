@@ -12,54 +12,56 @@ import java.util.List;
 import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
 
-public class PricePlanTest {
+class PricePlanTest {
 
-    private final String ENERGY_SUPPLIER_NAME = "Energy Supplier Name";
+  private static final String ENERGY_SUPPLIER_NAME = "Energy Supplier Name";
 
-    @Test
-    public void shouldReturnTheEnergySupplierGivenInTheConstructor() {
-        PricePlan pricePlan = new PricePlan(null, ENERGY_SUPPLIER_NAME, null, null);
+  @Test
+  void shouldReturnTheEnergySupplierGivenInTheConstructor() {
+    PricePlan pricePlan = new PricePlan(null, ENERGY_SUPPLIER_NAME, null, null);
 
-        assertThat(pricePlan.getEnergySupplier()).isEqualTo(ENERGY_SUPPLIER_NAME);
-    }
+    assertThat(pricePlan.getEnergySupplier()).isEqualTo(ENERGY_SUPPLIER_NAME);
+  }
 
-    @Test
-    public void shouldReturnTheBasePriceGivenAnOrdinaryDateTime() throws Exception {
-        LocalDateTime normalDateTime = LocalDateTime.of(2017, Month.AUGUST, 31, 12, 0, 0);
-        PricePlan.PeakTimeMultiplier peakTimeMultiplier =
-                new PricePlan.PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
-        PricePlan pricePlan = new PricePlan(null, null, BigDecimal.ONE, singletonList(peakTimeMultiplier));
+  @Test
+  void shouldReturnTheBasePriceGivenAnOrdinaryDateTime() {
+    LocalDateTime normalDateTime = LocalDateTime.of(2017, Month.AUGUST, 31, 12, 0, 0);
+    PeakTimeMultiplier peakTimeMultiplier =
+        new PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
+    PricePlan pricePlan =
+        new PricePlan(null, null, BigDecimal.ONE, singletonList(peakTimeMultiplier));
 
-        BigDecimal price = pricePlan.getPrice(normalDateTime);
+    BigDecimal price = pricePlan.getPrice(normalDateTime);
 
-        assertThat(price).isCloseTo(BigDecimal.ONE, Percentage.withPercentage(1));
-    }
+    assertThat(price).isCloseTo(BigDecimal.ONE, Percentage.withPercentage(1));
+  }
 
-    @Test
-    public void shouldReturnAnExceptionPriceGivenExceptionalDateTime() throws Exception {
-        LocalDateTime exceptionalDateTime = LocalDateTime.of(2017, Month.AUGUST, 30, 23, 0, 0);
-        PricePlan.PeakTimeMultiplier peakTimeMultiplier =
-                new PricePlan.PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
-        PricePlan pricePlan = new PricePlan(null, null, BigDecimal.ONE, singletonList(peakTimeMultiplier));
+  @Test
+  void shouldReturnAnExceptionPriceGivenExceptionalDateTime() {
+    LocalDateTime exceptionalDateTime = LocalDateTime.of(2017, Month.AUGUST, 30, 23, 0, 0);
+    PeakTimeMultiplier peakTimeMultiplier =
+        new PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
+    PricePlan pricePlan =
+        new PricePlan(null, null, BigDecimal.ONE, singletonList(peakTimeMultiplier));
 
-        BigDecimal price = pricePlan.getPrice(exceptionalDateTime);
+    BigDecimal price = pricePlan.getPrice(exceptionalDateTime);
 
-        assertThat(price).isCloseTo(BigDecimal.TEN, Percentage.withPercentage(1));
-    }
+    assertThat(price).isCloseTo(BigDecimal.TEN, Percentage.withPercentage(1));
+  }
 
-    @Test
-    public void shouldReceiveMultipleExceptionalDateTimes() throws Exception {
-        LocalDateTime exceptionalDateTime = LocalDateTime.of(2017, Month.AUGUST, 30, 23, 0, 0);
-        PricePlan.PeakTimeMultiplier peakTimeMultiplier =
-                new PricePlan.PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
-        PricePlan.PeakTimeMultiplier otherPeakTimeMultiplier =
-                new PricePlan.PeakTimeMultiplier(DayOfWeek.TUESDAY, BigDecimal.TEN);
-        List<PricePlan.PeakTimeMultiplier> peakTimeMultipliers =
-                Arrays.asList(peakTimeMultiplier, otherPeakTimeMultiplier);
-        PricePlan pricePlan = new PricePlan(null, null, BigDecimal.ONE, peakTimeMultipliers);
+  @Test
+  void shouldReceiveMultipleExceptionalDateTimes() {
+    LocalDateTime exceptionalDateTime = LocalDateTime.of(2017, Month.AUGUST, 30, 23, 0, 0);
+    PeakTimeMultiplier peakTimeMultiplier =
+        new PeakTimeMultiplier(DayOfWeek.WEDNESDAY, BigDecimal.TEN);
+    PeakTimeMultiplier otherPeakTimeMultiplier =
+        new PeakTimeMultiplier(DayOfWeek.TUESDAY, BigDecimal.TEN);
+    List<PeakTimeMultiplier> peakTimeMultipliers =
+        Arrays.asList(peakTimeMultiplier, otherPeakTimeMultiplier);
+    PricePlan pricePlan = new PricePlan(null, null, BigDecimal.ONE, peakTimeMultipliers);
 
-        BigDecimal price = pricePlan.getPrice(exceptionalDateTime);
+    BigDecimal price = pricePlan.getPrice(exceptionalDateTime);
 
-        assertThat(price).isCloseTo(BigDecimal.TEN, Percentage.withPercentage(1));
-    }
+    assertThat(price).isCloseTo(BigDecimal.TEN, Percentage.withPercentage(1));
+  }
 }
