@@ -13,79 +13,71 @@ import uk.tw.energy.domain.ElectricityReading;
 @Service
 public class MeterReadingService {
 
-  private final Logger log = LoggerFactory.getLogger(MeterReadingService.class);
+    private final Logger log = LoggerFactory.getLogger(MeterReadingService.class);
 
-  private final Map<String, List<ElectricityReading>> meterAssociatedReadings;
+    private final Map<String, List<ElectricityReading>> meterAssociatedReadings;
 
-  public MeterReadingService(Map<String, List<ElectricityReading>> meterAssociatedReadings) {
-    log.info("Instantiating Bean || meterAssociatedReadings = {}", meterAssociatedReadings);
-    this.meterAssociatedReadings = meterAssociatedReadings;
-    log.info("Instantiated Bean successfully");
-  }
-
-  public Optional<List<ElectricityReading>> getReadings(
-      String smartMeterId, Integer offset, Integer limit) {
-    log.info(
-        "Started ::getReadings || smartMeterId = {} || offset = {} || limit = {}",
-        smartMeterId,
-        offset,
-        limit);
-
-    if (!meterAssociatedReadings.containsKey(smartMeterId)) {
-      log.info("Error ::getReadings || not-found");
-      return Optional.empty();
+    public MeterReadingService(Map<String, List<ElectricityReading>> meterAssociatedReadings) {
+        log.info("Instantiating Bean || meterAssociatedReadings = {}", meterAssociatedReadings);
+        this.meterAssociatedReadings = meterAssociatedReadings;
+        log.info("Instantiated Bean successfully");
     }
 
-    List<ElectricityReading> readings = getPagedReadings(smartMeterId, offset, limit);
+    public Optional<List<ElectricityReading>> getReadings(String smartMeterId, Integer offset, Integer limit) {
+        log.info(
+                "Started ::getReadings || smartMeterId = {} || offset = {} || limit = {}", smartMeterId, offset, limit);
 
-    log.info("Finished ::getReadings || readings = {}", readings);
-    return Optional.of(readings);
-  }
+        if (!meterAssociatedReadings.containsKey(smartMeterId)) {
+            log.info("Error ::getReadings || not-found");
+            return Optional.empty();
+        }
 
-  public void storeReadings(String smartMeterId, List<ElectricityReading> electricityReadings) {
-    log.info(
-        "Started ::storeReadings || smartMeterId = {} || electricityReadings = {}",
-        smartMeterId,
-        electricityReadings);
+        List<ElectricityReading> readings = getPagedReadings(smartMeterId, offset, limit);
 
-    meterAssociatedReadings
-        .computeIfAbsent(smartMeterId, s -> new ArrayList<>())
-        .addAll(electricityReadings);
-
-    log.info(
-        "Finished ::storeReadings || meterAssociatedReadings.get(smartMeterId) = {}",
-        meterAssociatedReadings.get(smartMeterId));
-  }
-
-  private List<ElectricityReading> getPagedReadings(
-      String smartMeterId, Integer offset, Integer limit) {
-    log.info(
-        "Started ::getPagedReadings || smartMeterId = {} || offset = {} || limit = {}",
-        smartMeterId,
-        offset,
-        limit);
-
-    List<ElectricityReading> allReadings = meterAssociatedReadings.get(smartMeterId);
-
-    if (allReadings.isEmpty()) {
-      log.info("Finished ::getPagedReadings || readings = []");
-      return new ArrayList<>();
+        log.info("Finished ::getReadings || readings = {}", readings);
+        return Optional.of(readings);
     }
 
-    int endIndex = (offset + limit);
+    public void storeReadings(String smartMeterId, List<ElectricityReading> electricityReadings) {
+        log.info(
+                "Started ::storeReadings || smartMeterId = {} || electricityReadings = {}",
+                smartMeterId,
+                electricityReadings);
 
-    List<ElectricityReading> readings =
-        allReadings
-            .subList(
-                (offset < allReadings.size()) ? offset : allReadings.size(),
-                (offset < allReadings.size() && endIndex < allReadings.size())
-                    ? endIndex
-                    : allReadings.size())
-            .stream()
-            .sorted(Comparator.comparing(ElectricityReading::time))
-            .toList();
+        meterAssociatedReadings
+                .computeIfAbsent(smartMeterId, s -> new ArrayList<>())
+                .addAll(electricityReadings);
 
-    log.info("Finished ::getPagedReadings || readings = {}", readings);
-    return readings;
-  }
+        log.info(
+                "Finished ::storeReadings || meterAssociatedReadings.get(smartMeterId) = {}",
+                meterAssociatedReadings.get(smartMeterId));
+    }
+
+    private List<ElectricityReading> getPagedReadings(String smartMeterId, Integer offset, Integer limit) {
+        log.info(
+                "Started ::getPagedReadings || smartMeterId = {} || offset = {} || limit = {}",
+                smartMeterId,
+                offset,
+                limit);
+
+        List<ElectricityReading> allReadings = meterAssociatedReadings.get(smartMeterId);
+
+        if (allReadings.isEmpty()) {
+            log.info("Finished ::getPagedReadings || readings = []");
+            return new ArrayList<>();
+        }
+
+        int endIndex = (offset + limit);
+
+        List<ElectricityReading> readings = allReadings
+                .subList(
+                        (offset < allReadings.size()) ? offset : allReadings.size(),
+                        (offset < allReadings.size() && endIndex < allReadings.size()) ? endIndex : allReadings.size())
+                .stream()
+                .sorted(Comparator.comparing(ElectricityReading::time))
+                .toList();
+
+        log.info("Finished ::getPagedReadings || readings = {}", readings);
+        return readings;
+    }
 }

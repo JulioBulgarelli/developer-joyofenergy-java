@@ -19,45 +19,44 @@ import uk.tw.energy.service.MeterReadingService;
 @RequestMapping("/readings")
 public class MeterReadingController {
 
-  private final MeterReadingService meterReadingService;
+    private final MeterReadingService meterReadingService;
 
-  public MeterReadingController(MeterReadingService meterReadingService) {
-    this.meterReadingService = meterReadingService;
-  }
-
-  @PostMapping
-  public ResponseEntity<Void> storeReadings(@RequestBody MeterReadings meterReadings) {
-
-    if (!isMeterReadingsValid(meterReadings)) {
-      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+    public MeterReadingController(MeterReadingService meterReadingService) {
+        this.meterReadingService = meterReadingService;
     }
 
-    meterReadingService.storeReadings(
-        meterReadings.smartMeterId(), meterReadings.electricityReadings());
+    @PostMapping
+    public ResponseEntity<Void> storeReadings(@RequestBody MeterReadings meterReadings) {
 
-    return ResponseEntity.ok().build();
-  }
+        if (!isMeterReadingsValid(meterReadings)) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
 
-  private boolean isMeterReadingsValid(MeterReadings meterReadings) {
+        meterReadingService.storeReadings(meterReadings.smartMeterId(), meterReadings.electricityReadings());
 
-    String smartMeterId = meterReadings.smartMeterId();
-    List<ElectricityReading> electricityReadings = meterReadings.electricityReadings();
+        return ResponseEntity.ok().build();
+    }
 
-    return smartMeterId != null
-        && !smartMeterId.isEmpty()
-        && electricityReadings != null
-        && !electricityReadings.isEmpty();
-  }
+    private boolean isMeterReadingsValid(MeterReadings meterReadings) {
 
-  @GetMapping("/{smartMeterId}")
-  public ResponseEntity<List<ElectricityReading>> readReadings(
-      @PathVariable String smartMeterId,
-      @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-      @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
+        String smartMeterId = meterReadings.smartMeterId();
+        List<ElectricityReading> electricityReadings = meterReadings.electricityReadings();
 
-    Optional<List<ElectricityReading>> readings =
-        meterReadingService.getReadings(smartMeterId, offset, limit);
+        return smartMeterId != null
+                && !smartMeterId.isEmpty()
+                && electricityReadings != null
+                && !electricityReadings.isEmpty();
+    }
 
-    return readings.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
-  }
+    @GetMapping("/{smartMeterId}")
+    public ResponseEntity<List<ElectricityReading>> readReadings(
+            @PathVariable String smartMeterId,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
+
+        Optional<List<ElectricityReading>> readings = meterReadingService.getReadings(smartMeterId, offset, limit);
+
+        return readings.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 }

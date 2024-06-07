@@ -10,22 +10,21 @@ import org.junit.jupiter.api.Test;
 
 class MeterReadingServiceTest {
 
-  private MeterReadingService meterReadingService;
+    private MeterReadingService meterReadingService;
 
-  @BeforeEach
-  public void setUp() {
-    meterReadingService = new MeterReadingService(new HashMap<>());
-  }
+    @BeforeEach
+    public void setUp() {
+        meterReadingService = new MeterReadingService(new HashMap<>());
+    }
 
-  @Test
-  void givenMeterIdThatDoesNotExistShouldReturnNull() {
-    assertThat(meterReadingService.getReadings("unknown-id", 0, 10)).isEmpty();
-  }
+    @Test
+    void givenMeterIdThatDoesNotExistShouldReturnNull() {
+        assertThat(meterReadingService.getReadings("unknown-id", 0, 10)).isEmpty();
+    }
 
-  @Test
-  void givenMeterReadingThatExistsShouldReturnMeterReadings() {
-    meterReadingService.storeReadings("random-id", new ArrayList<>());
-    assertThat(meterReadingService.getReadings("random-id", 0, 10))
-        .isEqualTo(Optional.of(new ArrayList<>()));
-  }
+    @Test
+    void givenMeterReadingThatExistsShouldReturnMeterReadings() {
+        meterReadingService.storeReadings("random-id", new ArrayList<>());
+        assertThat(meterReadingService.getReadings("random-id", 0, 10)).isEqualTo(Optional.of(new ArrayList<>()));
+    }
 }

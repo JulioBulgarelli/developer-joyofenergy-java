@@ -8,23 +8,22 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountService {
 
-  private final Logger log = LoggerFactory.getLogger(AccountService.class);
+    private final Logger log = LoggerFactory.getLogger(AccountService.class);
 
-  private final Map<String, String> smartMeterToPricePlanAccounts;
+    private final Map<String, String> smartMeterToPricePlanAccounts;
 
-  public AccountService(Map<String, String> smartMeterToPricePlanAccounts) {
-    log.info(
-        "Instantiating Bean || smartMeterToPricePlanAccounts = {}", smartMeterToPricePlanAccounts);
-    this.smartMeterToPricePlanAccounts = smartMeterToPricePlanAccounts;
-    log.info("Instantiated Bean successfully");
-  }
+    public AccountService(Map<String, String> smartMeterToPricePlanAccounts) {
+        log.info("Instantiating Bean || smartMeterToPricePlanAccounts = {}", smartMeterToPricePlanAccounts);
+        this.smartMeterToPricePlanAccounts = smartMeterToPricePlanAccounts;
+        log.info("Instantiated Bean successfully");
+    }
 
-  public String getPricePlanIdForSmartMeterId(String smartMeterId) {
-    log.info("Started ::getPricePlanIdForSmartMeterId || smartMeterId = {}", smartMeterId);
+    public String getPricePlanIdForSmartMeterId(String smartMeterId) {
+        log.info("Started ::getPricePlanIdForSmartMeterId || smartMeterId = {}", smartMeterId);
 
-    String pricePlanId = smartMeterToPricePlanAccounts.get(smartMeterId);
+        String pricePlanId = smartMeterToPricePlanAccounts.get(smartMeterId);
 
-    log.info("Finished ::getPricePlanIdForSmartMeterId || pricePlanId = {}", pricePlanId);
-    return pricePlanId;
-  }
+        log.info("Finished ::getPricePlanIdForSmartMeterId || pricePlanId = {}", pricePlanId);
+        return pricePlanId;
+    }
 }

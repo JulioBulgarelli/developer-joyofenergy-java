@@ -18,62 +18,59 @@ import uk.tw.energy.service.PricePlanService;
 @RequestMapping("/price-plans")
 public class PricePlanComparatorController {
 
-  public static final String PRICE_PLAN_ID_KEY = "pricePlanId";
-  public static final String PRICE_PLAN_COMPARISONS_KEY = "pricePlanComparisons";
-  private final PricePlanService pricePlanService;
-  private final AccountService accountService;
+    public static final String PRICE_PLAN_ID_KEY = "pricePlanId";
+    public static final String PRICE_PLAN_COMPARISONS_KEY = "pricePlanComparisons";
+    private final PricePlanService pricePlanService;
+    private final AccountService accountService;
 
-  public PricePlanComparatorController(
-      PricePlanService pricePlanService, AccountService accountService) {
+    public PricePlanComparatorController(PricePlanService pricePlanService, AccountService accountService) {
 
-    this.pricePlanService = pricePlanService;
-    this.accountService = accountService;
-  }
-
-  @GetMapping("/comparisons")
-  public ResponseEntity<Map<String, Object>> calculatedCostForEachPricePlan(
-      @RequestParam(value = "smart-meter-id") String smartMeterId,
-      @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-      @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
-
-    String pricePlanId = accountService.getPricePlanIdForSmartMeterId(smartMeterId);
-    Optional<Map<String, BigDecimal>> consumptionsForPricePlans =
-        pricePlanService.getConsumptionCostOfElectricityReadingsForEachPricePlan(
-            smartMeterId, offset, limit);
-
-    if (consumptionsForPricePlans.isEmpty()) {
-      return ResponseEntity.notFound().build();
+        this.pricePlanService = pricePlanService;
+        this.accountService = accountService;
     }
 
-    Map<String, Object> pricePlanComparisons = new HashMap<>();
-    pricePlanComparisons.put(PRICE_PLAN_ID_KEY, pricePlanId);
-    pricePlanComparisons.put(PRICE_PLAN_COMPARISONS_KEY, consumptionsForPricePlans.get());
+    @GetMapping("/comparisons")
+    public ResponseEntity<Map<String, Object>> calculatedCostForEachPricePlan(
+            @RequestParam(value = "smart-meter-id") String smartMeterId,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
 
-    return ResponseEntity.ok(pricePlanComparisons);
-  }
+        String pricePlanId = accountService.getPricePlanIdForSmartMeterId(smartMeterId);
+        Optional<Map<String, BigDecimal>> consumptionsForPricePlans =
+                pricePlanService.getConsumptionCostOfElectricityReadingsForEachPricePlan(smartMeterId, offset, limit);
 
-  @GetMapping("/recommendations")
-  public ResponseEntity<List<Map.Entry<String, BigDecimal>>> recommendCheapestPricePlans(
-      @RequestParam(value = "smart-meter-id") String smartMeterId,
-      @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
-      @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
+        if (consumptionsForPricePlans.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
 
-    Optional<Map<String, BigDecimal>> consumptionsForPricePlans =
-        pricePlanService.getConsumptionCostOfElectricityReadingsForEachPricePlan(
-            smartMeterId, offset, limit);
+        Map<String, Object> pricePlanComparisons = new HashMap<>();
+        pricePlanComparisons.put(PRICE_PLAN_ID_KEY, pricePlanId);
+        pricePlanComparisons.put(PRICE_PLAN_COMPARISONS_KEY, consumptionsForPricePlans.get());
 
-    if (consumptionsForPricePlans.isEmpty()) {
-      return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(pricePlanComparisons);
     }
 
-    List<Map.Entry<String, BigDecimal>> recommendations =
-        new ArrayList<>(consumptionsForPricePlans.get().entrySet());
-    recommendations.sort(Map.Entry.comparingByValue());
+    @GetMapping("/recommendations")
+    public ResponseEntity<List<Map.Entry<String, BigDecimal>>> recommendCheapestPricePlans(
+            @RequestParam(value = "smart-meter-id") String smartMeterId,
+            @RequestParam(value = "offset", required = false, defaultValue = "0") Integer offset,
+            @RequestParam(value = "limit", required = false, defaultValue = "10") Integer limit) {
 
-    if (limit != null && limit <= recommendations.size()) {
-      return ResponseEntity.ok(recommendations.subList(0, limit));
+        Optional<Map<String, BigDecimal>> consumptionsForPricePlans =
+                pricePlanService.getConsumptionCostOfElectricityReadingsForEachPricePlan(smartMeterId, offset, limit);
+
+        if (consumptionsForPricePlans.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Map.Entry<String, BigDecimal>> recommendations =
+                new ArrayList<>(consumptionsForPricePlans.get().entrySet());
+        recommendations.sort(Map.Entry.comparingByValue());
+
+        if (limit != null && limit <= recommendations.size()) {
+            return ResponseEntity.ok(recommendations.subList(0, limit));
+        }
+
+        return ResponseEntity.ok(recommendations);
     }
-
-    return ResponseEntity.ok(recommendations);
-  }
 }
