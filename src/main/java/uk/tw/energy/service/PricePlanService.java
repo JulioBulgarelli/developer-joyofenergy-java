@@ -3,6 +3,7 @@ package uk.tw.energy.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -17,10 +18,12 @@ public class PricePlanService {
 
     private final List<PricePlan> pricePlans;
     private final MeterReadingService meterReadingService;
+    private final AccountService accountService;
 
-    public PricePlanService(List<PricePlan> pricePlans, MeterReadingService meterReadingService) {
+    public PricePlanService(List<PricePlan> pricePlans, MeterReadingService meterReadingService, AccountService accountService) {
         this.pricePlans = pricePlans;
         this.meterReadingService = meterReadingService;
+        this.accountService = accountService;
     }
 
     public Optional<Map<String, BigDecimal>> getConsumptionCostOfElectricityReadingsForEachPricePlan(
@@ -33,6 +36,28 @@ public class PricePlanService {
 
         return Optional.of(pricePlans.stream()
                 .collect(Collectors.toMap(PricePlan::getPlanName, t -> calculateCost(electricityReadings.get(), t))));
+    }
+
+    public Optional<BigDecimal> getConsumptionCostOfElectricityReadingsForEachPricePlanWithinRange(
+            String smartMeterId, Instant from, Instant to) {
+
+        String pricePlanName = accountService.getPricePlanIdForSmartMeterId(smartMeterId);
+        if (pricePlanName.isBlank()) {
+            Optional.empty();
+        }
+
+        Optional<List<ElectricityReading>> electricityReadings = meterReadingService
+                .getReadingsWithinRange(smartMeterId, from, to);
+
+        if (!electricityReadings.isPresent()) {
+            return Optional.empty();
+        }
+
+        PricePlan pricePlan = pricePlans.stream()
+                .filter(pp -> pp.getPlanName().equals(pricePlanName))
+                .findFirst().orElseThrow();
+
+        return Optional.of(calculateCost(electricityReadings.get(), pricePlan));
     }
 
     private BigDecimal calculateCost(List<ElectricityReading> electricityReadings, PricePlan pricePlan) {

@@ -1,5 +1,6 @@
 package uk.tw.energy.service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,11 @@ public class MeterReadingService {
 
     public Optional<List<ElectricityReading>> getReadings(String smartMeterId) {
         return Optional.ofNullable(meterAssociatedReadings.get(smartMeterId));
+    }
+
+    public Optional<List<ElectricityReading>> getReadingsWithinRange(String smartMeterId, Instant from, Instant to) {
+        return Optional.of(getReadings(smartMeterId).orElseThrow().stream()
+                .filter(er -> er.time().isAfter(from) && er.time().isBefore(to)).toList());
     }
 
     public void storeReadings(String smartMeterId, List<ElectricityReading> electricityReadings) {

@@ -300,3 +300,32 @@ Example output
   }
 ]
 ```
+
+## Task
+Como um cliente, eu gostaria de visualizar o custo da minha utilização da última semana, assim eu posso monitorar os meus gastos.
+
+Acceptance Criteria:
+
+- Dado que tenho um smart meter ID, com plano atrelado a ele e dados de uso armazenados, quando eu solicito o custo de uso, é mostrado o custo correto do uso da semana passada
+
+- Dado que tenho um smart meter ID sem um plano atrelado a ele e tenha dados de uso, é mostrado uma mensagem de erro.
+
+Calculo do custo de utilização
+
+- Unidade de leitura : kW (KilloWatt)
+
+- Unidade de tempo : Hour (h)
+
+- Unidade de Energia consumida : kW x Hour = kWh
+
+- Unidade da Tarifa : $ per kWh (ex 0.2 $ per kWh)
+
+Para calcula o custo de uso para uma duração (D) onde vamos assumir que capturamos N leituras (er1,er2,er3....erN):
+
+Média de leitura em KW = (er1.reading + er2.reading + ..... erN.Reading)/N
+
+Tempo de utilização em horas = Duration(D) in hours
+
+Energia consumida em kWh = average reading x usage time
+
+Custo = tariff unit prices x energy consumed
